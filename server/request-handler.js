@@ -36,27 +36,38 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  var dataObject = require('./data');
 
 
   var url = require('url');
   var fs = require('fs');
   var qs = require('querystring');
-  
+  var path = url.parse(request.url).pathname;
+  var statusCode = 200;
+  var headers = defaultCorsHeaders;
   // if (request.method === 'POST') {
   //   console.log(request);
   // }
+  var dataObject;
+  dataObject = JSON.parse(fs.readFileSync('./data.json'));
+  // fs.readFile('./data.json', function(err, data) {
+  //   if (err) {
+  //     console.log('error');
+  //   } else {
+  //     dataObject = JSON.parse(data);
+  //     response.writeHead(statusCode, headers);
+  //     response.end(JSON.stringify(dataObject));
+  //   }
+  // });
 
+  // console.log(dataObject);
   // console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  var path = url.parse(request.url).pathname;
-  console.log('path', path);
+
 
   // The outgoing status.
-  var statusCode = 200;
 
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
+
 
   // Tell the client we are sending them plain text.
   //
@@ -87,7 +98,11 @@ var requestHandler = function(request, response) {
       body += data;
       console.log(body);
 
-      dataObject.data.results.push(JSON.parse(body));
+      dataObject.results.push(JSON.parse(body));
+      fs.writeFile('./data.json', JSON.stringify(dataObject), (err) => {
+        if (err) { throw err; }
+        console.log('It\'s saved!');
+      });
       // Too much POST data, kill the connection!
       // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
       if (body.length > 1e6) {
@@ -105,7 +120,7 @@ var requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
   
-  response.end(JSON.stringify(dataObject.data));
+  response.end(JSON.stringify(dataObject));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
