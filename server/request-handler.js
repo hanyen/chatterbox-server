@@ -36,10 +36,36 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  var data = require('./data');
+  var dataObject = require('./data');
+
 
   var url = require('url');
   var fs = require('fs');
+  var qs = require('querystring');
+  
+  // if (request.method === 'POST') {
+  //   console.log(request);
+  // }
+
+  if (request.method === 'POST') {
+    var body = '';
+
+    request.on('data', function (data) {
+      body += data;
+
+      dataObject.data.results.push(JSON.parse(body));
+      // Too much POST data, kill the connection!
+      // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+      if (body.length > 1e6) {
+        request.connection.destroy();
+      }
+    });
+
+    // request.on('end', function () {
+    //   fs.writeFile('./data', body.join(','), 'utf-8');
+    //   // use post['blah'], etc.
+    // });
+  }
   // console.log('Serving request type ' + request.method + ' for url ' + request.url);
   var path = url.parse(request.url).pathname;
   console.log('path', path);
@@ -68,7 +94,7 @@ var requestHandler = function(request, response) {
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
   
-  response.end(JSON.stringify(data.data));
+  response.end(JSON.stringify(dataObject.data));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
