@@ -44,38 +44,23 @@ var requestHandler = function(request, response) {
   var path = url.parse(request.url).pathname;
   var statusCode = 200;
   var headers = defaultCorsHeaders;
-  // if (request.method === 'POST') {
-  //   console.log(request);
-  // }
+
   var dataObject;
   dataObject = JSON.parse(fs.readFileSync('./data.json'));
-  // fs.readFile('./data.json', function(err, data) {
-  //   if (err) {
-  //     console.log('error');
-  //   } else {
-  //     dataObject = JSON.parse(data);
-  //     response.writeHead(statusCode, headers);
-  //     response.end(JSON.stringify(dataObject));
-  //   }
-  // });
-
-  // console.log(dataObject);
-  // console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
-
-  // The outgoing status.
-
-
-  // See the note below about CORS headers.
-
-
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
+  console.log(path);
+  if (path === '/') {
+    console.log("inside path root ")
+    fs.readFile('../client/index.html', function(err, data) {
+      response.writeHead(200, {'Content-Type': 'text/html'});
+      response.write(data, function (error) {
+        response.end();
+      });
+    });
+  }
+  //content type being received and sent is application/json
   headers['Content-Type'] = 'application/json';
 
-    //if nonexistent endpoint is passed in
+  //if nonexistent endpoint is passed in
   if (path !== '/classes/messages') {
     statusCode = 404;
     response.writeHead(statusCode, headers);
@@ -83,22 +68,16 @@ var requestHandler = function(request, response) {
 
   }
 
-
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
+  //handle post requests
   if (request.method === 'POST') {
     var body = '';
     statusCode = 201;
     request.on('data', function (data) {
       body += data;
       console.log(body);
-
+      //push to current data object
       dataObject.results.push(JSON.parse(body));
+      //write to data.js file
       fs.writeFile('./data.json', JSON.stringify(dataObject), (err) => {
         if (err) { throw err; }
         console.log('It\'s saved!');
@@ -109,17 +88,12 @@ var requestHandler = function(request, response) {
         request.connection.destroy();
       }
     });
-
-    // request.on('end', function () {
-    //   fs.writeFile('./data', body.join(','), 'utf-8');
-    //   // use post['blah'], etc.
-    // });
   }
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
-  
+  //end the response and send back the dataObject to the client
   response.end(JSON.stringify(dataObject));
 };
 
