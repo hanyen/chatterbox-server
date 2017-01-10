@@ -85,6 +85,7 @@ var requestHandler = function(request, response) {
     statusCode = 201;
     request.on('data', function (data) {
       body += data;
+      console.log(body);
 
       dataObject.data.results.push(JSON.parse(body));
       // Too much POST data, kill the connection!
