@@ -37,10 +37,12 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
 
+  //npm install http-server -g
+  //run http-server from client folder to render client files on server side
+
 
   var url = require('url');
   var fs = require('fs');
-  var qs = require('querystring');
   var path = url.parse(request.url).pathname;
   var statusCode = 200;
   var headers = defaultCorsHeaders;
@@ -49,7 +51,7 @@ var requestHandler = function(request, response) {
   dataObject = JSON.parse(fs.readFileSync('./data.json'));
   console.log(path);
   if (path === '/') {
-    console.log("inside path root ")
+    console.log('inside path root');
     fs.readFile('../client/index.html', function(err, data) {
       response.writeHead(200, {'Content-Type': 'text/html'});
       response.write(data, function (error) {
@@ -61,12 +63,12 @@ var requestHandler = function(request, response) {
   headers['Content-Type'] = 'application/json';
 
   //if nonexistent endpoint is passed in
-  if (path !== '/classes/messages') {
-    statusCode = 404;
-    response.writeHead(statusCode, headers);
-    response.end('nonexistent endpoint');
+  // if (path !== '/classes/messages') {
+  //   statusCode = 404;
+  //   response.writeHead(statusCode, headers);
+  //   response.end('nonexistent endpoint');
 
-  }
+  // }
 
   //handle post requests
   if (request.method === 'POST') {
